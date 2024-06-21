@@ -500,6 +500,9 @@ function App() {
   }
 
   function suspenderServicio(tiempoDeEnfriamiento){
+    kioscos[0].cambiarEstado('Suspendido')
+
+
     const indiceClienteASuspender = Kiosco.colaComun.findIndex(cliente => cliente.estado.includes('SAKiosco'));
     
     if(indiceClienteASuspender < 0) {
@@ -510,12 +513,14 @@ function App() {
 
     clienteASuspender.cambiarEstado(`Cliente ${clienteASuspender.clienteId}-EAKioscoSuspendido`)
     clienteASuspender.cambiarHoraFinAtencion(clienteASuspender.horaFinAtencion + tiempoDeEnfriamiento)
+
   }
 
   function reanudarServicio(){
     const indiceClienteAReanudar = Kiosco.colaComun.findIndex(cliente => cliente.estado.includes('EAKioscoSuspendido'));
     
     if(indiceClienteAReanudar < 0) {
+      kioscos[0].cambiarEstado('Libre')
       return
     }
 
@@ -523,6 +528,8 @@ function App() {
 
     clienteAReanudar.cambiarEstado(`Cliente ${clienteAReanudar.clienteId}-SAKiosco-1`)
     // clienteASuspender.cambiarHoraFinAtencion(horaFinEnfriamiento)
+
+    kioscos[0].cambiarEstado('Ocupado')
   }
   
 
