@@ -242,7 +242,6 @@ function App() {
   let clientesDelSistemaT = []
 
     const agregarClienteAServicio = (listaServicio, nombreClase, clase, setLista, horaFinAtencion, horaActual, finAtencionString) => {
-      // console.log(Cliente.obtenerContadorClientes())
 
     let servicioLibreIndex = -1;
 
@@ -274,7 +273,6 @@ function App() {
 
     // !!!!!!
     // clientesDelSistemaT = clientesDelSistemaT.filter(cl => cl.estado !== '')
-    // console.log(clientesDelSistemaT)
     // clientesDelSistemaT.push(nuevoCliente)
 
 
@@ -409,8 +407,6 @@ function App() {
     // const clienteEnElSistema = clientesDelSistemaT.find(c => c.horaLlegada == clienteEliminado.horaLlegada)
     // const clienteEnElSistema = clientesDelSistemaT.findIndex(c => c.horaLlegada == clienteEliminado.horaLlegada)
     // const clienteEnElSistema = clientesDelSistemaT.map(c => c).findIndex(cl => compararObjetos(clienteEliminado, cl))
-    // console.log(clientesDelSistemaT.map(c=>c))
-    // console.log(clientesDelSistemaT)
 
     // if(clienteEnElSistema){
     //   clientesDelSistemaT.splice(clienteEnElSistema, 1)
@@ -510,7 +506,6 @@ function App() {
       nuevoTiempo = 8 * t;
     }
     
-    // console.log(random, t, reloj)
 
     return (reloj + nuevoTiempo) / 60;
   }
@@ -627,7 +622,6 @@ function App() {
 
       let rndVaKiosco
 
-      // console.log(i)
       
       
       if(i == 0){
@@ -764,17 +758,16 @@ function App() {
         })
       } else{
 
-        // console.log(i % 1000 == 0 ? i : '')
         // if(i % 1000 == 0){
-        //   // console.log(cods)
         //   clientesDelSistemaT.splice(0, 500);
-        //   // console.log(clientesDelSistemaT)
         // }
 
         const proximoEvento = encontrarProxHoraImportante(horasImportantes);
 
         evento = proximoEvento.proxNombre
         reloj = proximoEvento.proxReloj
+
+        // console.log(horasImportantes)
 
         if (evento == 'llegadaClienteCombustible'){
 
@@ -893,7 +886,7 @@ function App() {
         } else if(evento.substring(0,evento.length-1) == 'finAtencionKiosco'){
           
           const indiceFinalTexto = evento.substring(evento.length-1,evento.length)
-          const horaFin = finAtencionServicio(Kiosco, 'Kiosco', indiceFinalTexto, reloj, kioscos, valoresFormulario.tasaAtencionKiosco)
+          const [horaFin, cliente] = finAtencionServicio(Kiosco, 'Kiosco', indiceFinalTexto, reloj, kioscos, valoresFormulario.tasaAtencionKiosco)
           
 
           horasImportantes[`finAtencionKiosco${indiceFinalTexto}`] = null
@@ -997,7 +990,6 @@ function App() {
 
         } else if(evento == 'corteEnergia'){
 
-          // console.log(reloj)
           let tiempoDeEnfriamiento = tiempoEnfriamentoLLaveTermica(reloj, 0.00001)
           horasImportantes.finEnfriamientoLlave = reloj + tiempoDeEnfriamiento
           horasImportantes.corteEnergia = null
@@ -1071,14 +1063,9 @@ function App() {
           .filter(servicio => cantClinesEnColaPorServicio[servicio] === maxCola);
         const resultadoMayorCola = serviciosConMayorCola.join('-');
 
-        // console.log(reloj)
-        // console.log(clientesDelSistemaT.map(c=>c))
-        // clientesDelSistemaT = clientesDelSistemaT.filter(cl => cl.estado !== '')
-        // console.log(clientesDelSistemaT.map(c=>c))
 
         const clS = [...Surtidor.colaComun].concat([...Lavadero.colaComun]).concat([...MantenimientoRapido.colaComun]).concat([...Cajero.colaComun]).concat([...Kiosco.colaComun])
         // cantidadClientes = clS.filter(c=>c.estado).length
-        // console.log(clS)
 
         tabla.push({
           evento: evento,
@@ -1100,13 +1087,13 @@ function App() {
           tiempoEntreLlegadasCaja: evento=='llegadaClienteCaja' ? parseFloat(llegadaClienteCajaTiempoEntreLlegadas.toFixed(4)) : '',
           proximaLlegadaCaja: parseFloat(horasImportantes.llegadaClienteCaja.toFixed(4)),
   
-          rndVaKiosco: evento.substring(0,7)=='llegada' || evento.substring(0,11)=='finAtencion' 
+          rndVaKiosco: (evento.substring(0,7)=='llegada' || evento.substring(0,11)=='finAtencion') && evento !== 'finAtencionKiosco1'
                         ? rndVaKiosco ? parseFloat(rndVaKiosco).toFixed(4) : ''
                         : '',
-          vaKiosco: evento.substring(0,7)=='llegada' || evento.substring(0,11)=='finAtencion'  
+          vaKiosco: (evento.substring(0,7)=='llegada' || evento.substring(0,11)=='finAtencion') && evento !== 'finAtencionKiosco1'
                         ? evento.substring(0,7)=='llegada' ? rndVaKiosco >= 0.25 ? 'No' : 'Sí' : rndVaKiosco >= 0.10 ? 'No' : 'Sí'
                         : '',
-          finAtencionKiosco1: horaFinKiosco[0] ? parseFloat(horaFinKiosco[0]).toFixed(4) : '',
+          finAtencionKiosco1: horaFinKiosco[0] !== null ? parseFloat(horaFinKiosco[0]).toFixed(4) : '',
 
           finAtencionCombustible1: horaFinSurtidores[0] ? parseFloat(horaFinSurtidores[0]).toFixed(4) : '',
           finAtencionCombustible2: horaFinSurtidores[1] ? parseFloat(horaFinSurtidores[1]).toFixed(4) : '',
@@ -1600,12 +1587,15 @@ function App() {
             </thead>
             <tbody>
               {tablaDeSimulacion.map((fila, index) => {
-                
                 const menorValor = encontrarMenorValor(fila);
                 const startIndex = valoresFormulario.lineaAVisualizar - 1;
                 const endIndex = startIndex + 300;
 
                 if ((index >= startIndex && index < endIndex) || (index === tablaDeSimulacion.length - 1)) {
+
+                  // console.log(fila.reloj, fila.finAtencionKiosco1)
+                  // console.log(fila.reloj == fila.finAtencionKiosco1)
+                  // console.log(fila.reloj === fila.finAtencionKiosco1)
 
                   return(
                   <tr key={index}>
